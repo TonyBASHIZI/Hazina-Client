@@ -170,3 +170,15 @@ a:hover {
     display: none !important;
   }
 }
+/* Taille uniforme pour toutes les images de la galerie */
+.gallery-slider .gallery-item,
+.gallery-slider .owl-item {
+  height: 260px !important;
+}
+.gallery-item img {
+  width: 100% !important;
+  height: 260px !important;
+  object-fit: cover !important;
+  border-radius: 8px;
+  display: block;
+}

@@ -31,15 +31,11 @@ $client = currentClientUser();
 </head>
 
 <body>
-    <div class="loader">
-        <div class="d-table">
-            <div class="d-table-cell">
-                <div class="pre-box-one">
-                    <div class="pre-box-two"></div>
-                </div>
-            </div>
+    <div class="loader" style="display:flex; align-items:center; justify-content:center; background-color:#0B0F2A;">
+            <div class="spinner-border" style="color:#D4AF37; width:3rem; height:3rem;" role="status"></div>
         </div>
     </div>
+</div>
 
     <!-- Header -->
     <div class="header-area">

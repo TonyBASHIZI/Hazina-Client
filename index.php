@@ -2,14 +2,26 @@
 require_once __DIR__ . '/includes/functions.php';
 $pdo = getPDO();
 
-$projects = $pdo->query(
-    "SELECT p.*,
-        (SELECT COUNT(DISTINCT donor_email) FROM donations WHERE project_id = p.id AND status = 'completed' AND donor_email != '') +
-        (SELECT COUNT(*) FROM donations WHERE project_id = p.id AND status = 'completed' AND (donor_email = '' OR donor_email IS NULL)) AS donor_count
-     FROM projects p
-     WHERE p.status = 'active'
-     ORDER BY p.created_at DESC"
-)->fetchAll();
+$search = trim($_GET['q'] ?? '');
+
+$sql = "SELECT p.*,
+    (SELECT COUNT(DISTINCT donor_email) FROM donations WHERE project_id = p.id AND status = 'completed' AND donor_email != '') +
+    (SELECT COUNT(*) FROM donations WHERE project_id = p.id AND status = 'completed' AND (donor_email = '' OR donor_email IS NULL)) AS donor_count
+ FROM projects p
+ WHERE p.status = 'active'";
+
+$params = [];
+if ($search !== '') {
+    $sql .= " AND (p.title LIKE :q1 OR p.category LIKE :q2 OR p.description LIKE :q3)";
+    $params['q1'] = "%$search%";
+    $params['q2'] = "%$search%";
+    $params['q3'] = "%$search%";
+}
+$sql .= " ORDER BY p.created_at DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$projects = $stmt->fetchAll();
 
 $pageTitle = 'Accueil';
 require_once __DIR__ . '/includes/header.php';
@@ -121,10 +133,14 @@ require_once __DIR__ . '/includes/header.php';
 <section class="donations-area two pt-100 pb-70" id="projects">
     <div class="container">
         <div class="section-title">
-            <span class="sub-title">Nos causes</span>
-            <h2>Sois la raison du sourire de quelqu'un</h2>
-            <p>Chaque projet ci-dessous est vérifié par notre équipe. Choisis une cause et fais la différence dès aujourd'hui.</p>
-        </div>
+        <span class="sub-title">Nos causes</span>
+        <h2>Sois la raison du sourire de quelqu'un</h2>
+            <?php if ($search !== ''): ?>
+                <p>Résultats pour "<strong><?= e($search) ?></strong>" — <a href="index.php">réinitialiser</a></p>
+            <?php else: ?>
+                <p>Chaque projet ci-dessous est vérifié par notre équipe. Choisis une cause et fais la différence dès aujourd'hui.</p>
+            <?php endif; ?>
+</div>
         <div class="row">
 
             <?php foreach ($projects as $p):
@@ -153,11 +169,11 @@ $pctDisplay = ($pct == 0 && $p['raised_amount'] > 0) ? 2 : $pct;
                         </div>
                         <div class="bottom">
                             <div class="skill" style="position:relative; margin:0 8px 20px 8px; padding-top:22px;">
-    <div class="skill-bar" style="width: <?= $pctDisplay ?>%; background:#ff6015; height:8px; border-radius:30px; position:relative;">
-    <span style="position:absolute; top:-24px; right:-8px; font-size:15px; font-weight:600; color:#302c51;"><?= $pct ?>%</span>
-</div>
-</div>
-                            <ul>
+                                    <div class="skill-bar" style="width: <?= $pctDisplay ?>%; background:#ff6015; height:8px; border-radius:30px; position:relative;">
+                                    <span style="position:absolute; top:-24px; right:-8px; font-size:15px; font-weight:600; color:#302c51;"><?= $pct ?>%</span>
+                                </div>
+                                </div>
+                                 <ul>
                                 <li>Collecté : <?= money((float)$p['raised_amount']) ?></li>
                                 <li>Objectif : <?= money((float)$p['goal_amount']) ?></li>
                             </ul>
@@ -180,60 +196,45 @@ $pctDisplay = ($pct == 0 && $p['raised_amount'] > 0) ? 2 : $pct;
 <!-- End Donation -->
 
   <!-- Gallery -->
-        <section class="gallery-area two pt-100 pb-70">
-            <div class="container-fluid">
-                <div class="section-title">
-                    <span class="sub-title">Our gallery</span>
-                    <h2>Discover the best things we do</h2>
-                    <p>We exist for non-profits, social enterprises, community groups, activists,lorem politicians and individual citizens that are making.</p>
-                </div>
-                <div class="gallery-slider owl-theme owl-carousel">
-
-                    <div class="gallery-item">
-                        <a href="assets/img/gallery/gallery1.jpg" data-lightbox="roadtrip">
-                            <img src="assets/img/gallery/gallery1.jpg" alt="Gallery">
-                            <i class="icofont-eye"></i>
-                        </a>
-                    </div>
-
-                    <div class="gallery-item">
-                        <a href="assets/img/gallery/gallery2.jpg" data-lightbox="roadtrip">
-                            <img src="assets/img/gallery/gallery2.jpg" alt="Gallery">
-                            <i class="icofont-eye"></i>
-                        </a>
-                    </div>
-
-                    <div class="gallery-item">
-                        <a href="assets/img/gallery/gallery3.jpg" data-lightbox="roadtrip">
-                            <img src="assets/img/gallery/gallery3.jpg" alt="Gallery">
-                            <i class="icofont-eye"></i>
-                        </a>
-                    </div>
-
-                    <div class="gallery-item">
-                        <a href="assets/img/gallery/gallery4.jpg" data-lightbox="roadtrip">
-                            <img src="assets/img/gallery/gallery4.jpg" alt="Gallery">
-                            <i class="icofont-eye"></i>
-                        </a>
-                    </div>
-
-                    <div class="gallery-item">
-                        <a href="assets/img/gallery/gallery5.jpg" data-lightbox="roadtrip">
-                            <img src="assets/img/gallery/gallery5.jpg" alt="Gallery">
-                            <i class="icofont-eye"></i>
-                        </a>
-                    </div>
-
-                    <div class="gallery-item">
-                        <a href="assets/img/gallery/gallery6.jpg" data-lightbox="roadtrip">
-                            <img src="assets/img/gallery/gallery6.jpg" alt="Gallery">
-                            <i class="icofont-eye"></i>
-                        </a>
-                    </div>
-
-                </div>
+        <?php
+        $galleryPhotos = $pdo->query(
+            "SELECT pi.image_path, p.title
+            FROM project_images pi
+            JOIN projects p ON p.id = pi.project_id
+            WHERE p.status = 'active'
+            ORDER BY pi.created_at DESC
+            LIMIT 12"
+        )->fetchAll();
+        ?>
+<section class="gallery-area two pt-100 pb-70">
+    <div class="container-fluid">
+        <div class="section-title">
+            <span class="sub-title">Notre galerie</span>
+            <h2>Découvre ce que nous faisons sur le terrain</h2>
+            <p>Quelques images de nos actions et de nos campagnes récentes auprès des communautés que nous soutenons.</p>
+        </div>
+        <div class="gallery-slider owl-theme owl-carousel">
+            <?php foreach ($galleryPhotos as $photo): ?>
+            <div class="gallery-item">
+                <a href="<?= e(resolveImagePath($photo['image_path'])) ?>" data-lightbox="hazina-gallery">
+                    <img src="<?= e(resolveImagePath($photo['image_path'])) ?>" alt="<?= e($photo['title']) ?>" style="width:100%; height:260px; object-fit:cover; display:block; border-radius:8px;" onerror="this.onerror=null;this.src='assets/img/gallery/gallery1.jpg';">
+                    <i class="icofont-eye"></i>
+                </a>
             </div>
-        </section>
+            <?php endforeach; ?>
+
+            <?php if (!$galleryPhotos): ?>
+                <div class="gallery-item">
+                    <a href="assets/img/gallery/gallery1.jpg" data-lightbox="hazina-gallery">
+                        <img src="assets/img/gallery/gallery1.jpg" alt="Galerie">
+                        <i class="icofont-eye"></i>
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</section>
+
         <!-- End Gallery -->
 
         <!-- Dream -->
@@ -381,138 +382,88 @@ $pctDisplay = ($pct == 0 && $p['raised_amount'] > 0) ? 2 : $pct;
         <!-- End Benefit -->
 
         <!-- Events -->
-        <section class="event-area pt-100 pb-70">
+        
+        <?php
+        $finishedProjects = $pdo->query(
+            "SELECT id, title, image, category, goal_amount, updated_at
+            FROM projects
+            WHERE status = 'completed'
+            ORDER BY updated_at DESC
+            LIMIT 6"
+        )->fetchAll();
+        $eventsLeft = array_slice($finishedProjects, 0, 3);
+        $eventsRight = array_slice($finishedProjects, 3, 3);
+        ?>
+
+        <!-- Events (projets terminés) -->
+        <section class="event-area pt-100 pb-70" id="events">
             <div class="container">
                 <div class="section-title">
-                    <span class="sub-title">Our events</span>
-                    <h2>Upcoming events near you</h2>
+                    <span class="sub-title">Nos réalisations</span>
+                    <h2>Projets menés à terme grâce à vous</h2>
                 </div>
+
+                <?php if ($finishedProjects): ?>
                 <div class="row align-items-center">
 
                     <div class="col-lg-6">
+                        <?php foreach ($eventsLeft as $ev): ?>
                         <div class="event-item">
-                            <img src="assets/img/event/event1.jpg" alt="Event">
+                            <img src="<?= e(resolveImagePath($ev['image'])) ?>" alt="<?= e($ev['title']) ?>" onerror="this.onerror=null;this.src='assets/img/event/event1.jpg';">
                             <div class="inner">
-                                <h4>04 <span>Jan</span></h4>
+                                <h4><?= date('d', strtotime($ev['updated_at'])) ?> <span><?= date('M', strtotime($ev['updated_at'])) ?></span></h4>
                                 <h3>
-                                    <a href="event-details.html">Fundraising for MQ</a>
+                                    <a href="donation-details.php?id=<?= (int)$ev['id'] ?>"><?= e($ev['title']) ?></a>
                                 </h3>
                                 <ul>
                                     <li>
-                                        <i class="icofont-stopwatch"></i>
-                                        <span>2.00pm - 5.00pm</span>
+                                        <i class="icofont-money-bag"></i>
+                                        <span><?= money((float)$ev['goal_amount']) ?> collecté</span>
                                     </li>
+                                    <?php if ($ev['category']): ?>
                                     <li>
                                         <i class="icofont-location-pin"></i>
-                                        <span>Australia</span>
+                                        <span><?= e($ev['category']) ?></span>
                                     </li>
+                                    <?php endif; ?>
                                 </ul>
                             </div>
                         </div>
+                        <?php endforeach; ?>
                     </div>
 
                     <div class="col-lg-6">
-                        <div class="event-item">
-                            <img src="assets/img/event/event2.jpg" alt="Event">
-                            <div class="inner">
-                                <h4>05 <span>Jan</span></h4>
-                                <h3>
-                                    <a href="event-details.html">Shout about it with us</a>
-                                </h3>
-                                <ul>
-                                    <li>
-                                        <i class="icofont-stopwatch"></i>
-                                        <span>1.00pm - 2.00pm</span>
-                                    </li>
-                                    <li>
-                                        <i class="icofont-location-pin"></i>
-                                        <span>Canada</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6">
-                        <div class="event-item">
-                            <img src="assets/img/event/event3.jpg" alt="Event">
-                            <div class="inner">
-                                <h4>10 <span>Jan</span></h4>
-                                <h3>
-                                    <a href="event-details.html">Relief giving - Providing relief</a>
-                                </h3>
-                                <ul>
-                                    <li>
-                                        <i class="icofont-stopwatch"></i>
-                                        <span>3.00pm - 4.00pm</span>
-                                    </li>
-                                    <li>
-                                        <i class="icofont-location-pin"></i>
-                                        <span>USA</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6">
-
+                        <?php foreach ($eventsRight as $ev): ?>
                         <div class="event-item-right">
-                            <h4>06 <span>Jan</span></h4>
+                            <h4><?= date('d', strtotime($ev['updated_at'])) ?> <span><?= date('M', strtotime($ev['updated_at'])) ?></span></h4>
                             <h3>
-                                <a href="event-details.html">Challenge is right for you</a>
+                                <a href="donation-details.php?id=<?= (int)$ev['id'] ?>"><?= e($ev['title']) ?></a>
                             </h3>
                             <ul>
                                 <li>
-                                    <i class="icofont-stopwatch"></i>
-                                    <span>10.00am - 11.00am</span>
+                                    <i class="icofont-money-bag"></i>
+                                    <span><?= money((float)$ev['goal_amount']) ?> collecté</span>
                                 </li>
+                                <?php if ($ev['category']): ?>
                                 <li>
                                     <i class="icofont-location-pin"></i>
-                                    <span>UK</span>
+                                    <span><?= e($ev['category']) ?></span>
                                 </li>
+                                <?php endif; ?>
                             </ul>
                         </div>
-
-                        <div class="event-item-right">
-                            <h4>07 <span>Jan</span></h4>
-                            <h3>
-                                <a href="event-details.html">Fundraising is going</a>
-                            </h3>
-                            <ul>
-                                <li>
-                                    <i class="icofont-stopwatch"></i>
-                                    <span>11.00am - 12.00pm</span>
-                                </li>
-                                <li>
-                                    <i class="icofont-location-pin"></i>
-                                    <span>France</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="event-item-right">
-                            <h4>08 <span>Jan</span></h4>
-                            <h3>
-                                <a href="event-details.html">Bowling for a cause</a>
-                            </h3>
-                            <ul>
-                                <li>
-                                    <i class="icofont-stopwatch"></i>
-                                    <span>1.00pm - 1.30pm</span>
-                                </li>
-                                <li>
-                                    <i class="icofont-location-pin"></i>
-                                    <span>Spain</span>
-                                </li>
-                            </ul>
-                        </div>
-
+                        <?php endforeach; ?>
                     </div>
 
                 </div>
+                <?php else: ?>
+                    <p class="text-center text-muted">Aucun projet terminé pour le moment — reviens bientôt voir nos premières réussites !</p>
+                <?php endif; ?>
+
             </div>
         </section>
+
+        
         <!-- End Events -->
 
         <!--=== Team ===-->
