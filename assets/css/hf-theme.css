@@ -1,0 +1,184 @@
+/* ===== Hazina Funding — Palette Or / Marine / Argent ===== */
+:root {
+  --hf-navy: #0B0F2A;
+  --hf-navy-light: #141a3d;
+  --hf-gold: #D4AF37;
+  --hf-gold-dark: #A8841F;
+  --hf-silver: #C9CCD6;
+}
+
+/* Boutons principaux */
+.common-btn,
+.owl-theme .owl-dots .owl-dot.active span {
+  background-color: var(--hf-gold) !important;
+  border-color: var(--hf-gold) !important;
+  color: var(--hf-navy) !important;
+}
+.common-btn:hover {
+  background-color: var(--hf-gold-dark) !important;
+  border-color: var(--hf-gold-dark) !important;
+  color: #fff !important;
+}
+
+/* Navbar */
+.navbar-area .main-nav {
+  background-color: var(--hf-navy);
+}
+.header-area {
+  background-color: var(--hf-navy) !important;
+}
+.main-nav .navbar .navbar-nav .nav-item a:hover,
+.main-nav .navbar .navbar-nav .nav-item a.active {
+  color: var(--hf-gold) !important;
+}
+
+/* Titres de section */
+.section-title .sub-title {
+  color: var(--hf-gold) !important;
+}
+
+/* Tags / catégories sur les cartes projet */
+.donation-item .inner .top a.tags {
+  background-color: rgba(212, 175, 55, 0.12) !important;
+  color: var(--hf-gold-dark) !important;
+}
+
+/* Barre de progression */
+.donation-item .bottom .skill-bar {
+  background-color: var(--hf-gold) !important;
+}
+.donation-item .bottom .skill:before {
+  background-color: rgba(212, 175, 55, 0.15) !important;
+}
+
+/* Liens génériques au survol */
+a:hover {
+  color: var(--hf-gold-dark);
+}
+
+/* Footer */
+.footer-area {
+  background-color: var(--hf-navy) !important;
+}
+.footer-item .footer-logo ul li a,
+.footer-item .footer-links ul li a:hover,
+.footer-item h3 {
+  color: var(--hf-gold) !important;
+}
+
+/* Feature icons (Bénévole / Don / Soutien) */
+.feature-item i {
+  color: var(--hf-gold) !important;
+}
+.feature-item .feature-btn {
+  color: var(--hf-gold-dark) !important;
+}
+
+/* Team socials */
+.team-item .top ul li a {
+  background-color: var(--hf-gold) !important;
+  color: var(--hf-navy) !important;
+}
+
+/* Page title area (bannière interne, ex: donation-details) */
+.page-title-area {
+  background-color: var(--hf-navy) !important;
+}
+
+/* Boutons radio custom (formulaire de don) */
+.form-check-input:checked {
+  background-color: var(--hf-gold) !important;
+  border-color: var(--hf-gold) !important;
+}
+
+/* Widget "Go to top" */
+.go-top {
+  background-color: var(--hf-gold) !important;
+  color: var(--hf-navy) !important;
+}
+/* Taille fixe du logo dans la navbar */
+.navbar-brand img.logo-one,
+.navbar-brand img.logo-two {
+  max-height: 50px;
+  width: auto;
+}
+
+/* Logo plus grand dans le footer / pages login-register */
+.footer-logo img,
+.user-content-inner .top img {
+  max-height: 70px;
+  width: auto;
+}
+/* Liens du menu : visibles en blanc sur fond marine, or au survol/actif */
+.main-nav nav .navbar-nav .nav-item a {
+  color: #ffffff !important;
+}
+.main-nav nav .navbar-nav .nav-item a:hover,
+.main-nav nav .navbar-nav .nav-item a:focus,
+.main-nav nav .navbar-nav .nav-item a.active {
+  color: var(--hf-gold) !important;
+}
+
+/* Boutons Connexion / Profil / Déconnexion (side-nav) en or */
+.side-nav a {
+  background-color: var(--hf-gold) !important;
+  color: var(--hf-navy) !important;
+}
+.side-nav a:hover {
+  background-color: var(--hf-gold-dark) !important;
+  color: #ffffff !important;
+}
+/* Calque orange derrière "Tends la main..." → remplacé par l'or */
+.banner-area-two .banner-content:before {
+  background-color: var(--hf-gold) !important;
+  opacity: 0.85 !important;
+}
+
+/* Boutons de la bannière (Voir les projets / Faire un don) */
+.banner-area-two .banner-content .banner-btn-area .banner-btn {
+  color: var(--hf-navy) !important;
+  background-color: var(--hf-gold) !important;
+}
+.banner-area-two .banner-content .banner-btn-area .banner-btn:hover {
+  color: #ffffff !important;
+  background-color: var(--hf-navy) !important;
+}
+/* Fond du bloc "Faire un don" (avec flaticon-donation) → or au lieu d'orange */
+.feature-item.two {
+  background-color: var(--hf-gold) !important;
+}
+.feature-item.two i {
+  color: var(--hf-navy) !important; /* icône visible sur fond or */
+}
+
+/* Texte des 3 boutons (Rejoindre / Donner maintenant / Partager) en blanc */
+.feature-item .feature-btn {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+/* Corrige la taille du logo en mode mobile (menu hamburger) */
+.mobile-nav .logo img {
+  max-width: 100px;
+  max-height: 40px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+/* Cache les boutons Connexion/Profil/Déconnexion hors du menu hamburger sur mobile */
+@media only screen and (max-width: 767px) {
+  .side-nav {
+    display: none !important;
+  }
+}
+/* Taille uniforme pour toutes les images de la galerie */
+.gallery-slider .gallery-item,
+.gallery-slider .owl-item {
+  height: 260px !important;
+}
+.gallery-item img {
+  width: 100% !important;
+  height: 260px !important;
+  object-fit: cover !important;
+  border-radius: 8px;
+  display: block;
+}
