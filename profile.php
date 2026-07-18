@@ -116,6 +116,7 @@ require_once __DIR__ . '/includes/header.php';
     <div class="table-responsive">
         <table class="table align-middle" style="background:#fff;">
             <thead style="background:var(--hf-navy); color:#fff;">
+<<<<<<< HEAD
     <tr>
         <th>Projet</th>
         <th>Montant</th>
@@ -153,6 +154,39 @@ require_once __DIR__ . '/includes/header.php';
     </tr>
     <?php endforeach; ?>
 </tbody>
+=======
+                <tr>
+                    <th>Projet</th>
+                    <th>Montant</th>
+                    <th>Méthode</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($history as $don): ?>
+                <?php
+                    $statusLabel = ['completed' => 'Confirmé', 'pending' => 'En attente', 'cancelled' => 'Annulé'][$don['status']] ?? $don['status'];
+                    $statusColor = ['completed' => '#28a745', 'pending' => '#D4AF37', 'cancelled' => '#6c757d'][$don['status']] ?? '#6c757d';
+                ?>
+                <tr>
+                    <td>
+                        <a href="donation-details.php?id=<?= (int)$don['project_id'] ?>" style="color:var(--hf-navy); font-weight:600;">
+                            <?= e($don['project_title']) ?>
+                        </a>
+                    </td>
+                    <td><?= money((float)$don['amount']) ?></td>
+                    <td class="text-capitalize"><?= e($don['payment_method'] ?: '—') ?></td>
+                    <td>
+                        <span style="background: <?= $statusColor ?>; color:#fff; padding:4px 12px; border-radius:14px; font-size:12px;">
+                            <?= e($statusLabel) ?>
+                        </span>
+                    </td>
+                    <td><?= date('d/m/Y', strtotime($don['created_at'])) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
         </table>
     </div>
     <?php else: ?>

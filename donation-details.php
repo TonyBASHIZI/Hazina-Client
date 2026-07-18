@@ -321,7 +321,11 @@ require_once __DIR__ . '/includes/header.php';
                             CASE WHEN goal_amount > 0 THEN (raised_amount / goal_amount) * 100 ELSE 0 END AS pct
                          FROM projects
                          WHERE status = 'active'
+<<<<<<< HEAD
                          ORDER BY pct DESC
+=======
+                         ORDER BY pct ASC
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
                          LIMIT 4"
                     )->fetchAll();
                     ?>
@@ -374,6 +378,7 @@ require_once __DIR__ . '/includes/header.php';
                         </ul>
                     </div>
 
+<<<<<<< HEAD
                     <?php
                         $recentDonorsStmt = $pdo->prepare(
                             "SELECT donor_name FROM donations
@@ -402,6 +407,8 @@ require_once __DIR__ . '/includes/header.php';
                             </div>
                         </div>
 
+=======
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
                 </div>
             </div>
 

@@ -337,39 +337,65 @@ $pctDisplay = ($pct == 0 && $p['raised_amount'] > 0) ? 2 : $pct;
 
                     <div class="col-lg-6">
                         <div class="section-title">
+<<<<<<< HEAD
                             <span class="sub-title">Notre mission ensemble</span>
                             <h2>Dignité-Espoir-Vie-Avenir</h2>
+=======
+                            <span class="sub-title">Core features</span>
+                            <h2>Mission to make a smile</h2>
+                            <p>We exist for non-profits, social enterprises, community groups, activists,lorem politicians and individual citizens that are making.</p>
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
                         </div>
                         <div class="row">
                             <div class="col-sm-6 col-sm-6">
                                 <div class="benefit-item">
                                     <i class="flaticon-house"></i>
+<<<<<<< HEAD
                                     <h3>Habitat & Logement</h3>
                                     <p>Offrir un logement sûr et digne aux familles les plus vulnérables afin de leur garantir sécurité et stabilité</p>
+=======
+                                    <h3>Build home</h3>
+                                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique illum excepturi</p>
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
                                 </div>
                             </div>
         
                             <div class="col-sm-6 col-sm-6">
                                 <div class="benefit-item two">
                                     <i class="flaticon-hospital"></i>
+<<<<<<< HEAD
                                     <h3>Santé & Soins</h3>
                                     <p>Faciliter l'accès aux soins médicaux essentiels et améliorer le bien-être des personnes dans le besoin</p>
+=======
+                                    <h3>Medical facilities</h3>
+                                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique illum excepturi</p>
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
                                 </div>
                             </div>
         
                             <div class="col-sm-6 col-sm-6">
                                 <div class="benefit-item three">
                                     <i class="flaticon-fast-food"></i>
+<<<<<<< HEAD
                                     <h3>Alimentation & Eau potable</h3>
                                     <p>Fournir une alimentation équilibrée et un accès durable à une eau potable de qualité</p>
+=======
+                                    <h3>Food & water</h3>
+                                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique illum excepturi</p>
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
                                 </div>
                             </div>
         
                             <div class="col-sm-6 col-sm-6">
                                 <div class="benefit-item four">
                                     <i class="flaticon-graduation-cap"></i>
+<<<<<<< HEAD
                                     <h3>Éducation & Formation</h3>
                                     <p>Donner aux enfants et aux adultes les moyens d'apprendre, de se former et de construire un meilleur avenir.</p>
+=======
+                                    <h3>Education facilities</h3>
+                                    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Similique illum excepturi</p>
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
                                 </div>
                             </div>
                         </div>
@@ -466,6 +492,7 @@ $pctDisplay = ($pct == 0 && $p['raised_amount'] > 0) ? 2 : $pct;
         <!-- End Events -->
 
         <!--=== Team ===-->
+<<<<<<< HEAD
         <?php
 $donors = $pdo->query(
     "SELECT DISTINCT u.id, u.username, u.photo, MAX(d.created_at) AS last_don
@@ -574,6 +601,217 @@ $blogPosts = $pdo->query(
     </div>
 </section>
 
+=======
+        <section class="team-area pt-100 pb-70">
+            <div class="container">
+                <div class="section-title">
+                    <span class="sub-title">Volunteer</span>
+                    <h2>Meet our excellent volunteers</h2>
+                    <p>We exist for non-profits, social enterprises, community groups, activists,lorem politicians and individual citizens that are making.</p>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="team-item">
+                            <div class="top">
+                                <img src="assets/img/team/team1.jpg" alt="Team">
+                                <ul>
+                                    <li>
+                                        <a href="https://www.facebook.com/" target="_blank">
+                                            <i class="icofont-facebook"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.twitter.com/" target="_blank">
+                                            <i class="icofont-twitter"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.youtube.com/" target="_blank">
+                                            <i class="icofont-youtube-play"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.instagram.com/" target="_blank">
+                                            <i class="icofont-instagram"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <h3>Jenas handar</h3>
+                                <span>CEO & Founder</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="team-item">
+                            <div class="top">
+                                <img src="assets/img/team/team2.jpg" alt="Team">
+                                <ul>
+                                    <li>
+                                        <a href="https://www.facebook.com/" target="_blank">
+                                            <i class="icofont-facebook"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.twitter.com/" target="_blank">
+                                            <i class="icofont-twitter"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.youtube.com/" target="_blank">
+                                            <i class="icofont-youtube-play"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.instagram.com/" target="_blank">
+                                            <i class="icofont-instagram"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <h3>Smithy alisha</h3>
+                                <span>Manager</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="team-item">
+                            <div class="top">
+                                <img src="assets/img/team/team3.jpg" alt="Team">
+                                <ul>
+                                    <li>
+                                        <a href="https://www.facebook.com/" target="_blank">
+                                            <i class="icofont-facebook"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.twitter.com/" target="_blank">
+                                            <i class="icofont-twitter"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.youtube.com/" target="_blank">
+                                            <i class="icofont-youtube-play"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.instagram.com/" target="_blank">
+                                            <i class="icofont-instagram"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="bottom">
+                                <h3>Johan mendal</h3>
+                                <span>Volunteer</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!--=== End Team ===-->
+
+        <!--=== Blog ===-->
+        <section class="blog-area pt-100 pb-70">
+            <div class="container">
+                <div class="section-title">
+                    <span class="sub-title">Latest news & blog</span>
+                    <h2>Latest charity blog</h2>
+                    <p>We exist for non-profits, social enterprises, community groups, activists,lorem politicians and individual citizens that are making.</p>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="blog-item">
+                            <div class="top">
+                                <a href="blog-details.html">
+                                    <img src="assets/img/blog/blog1.jpg" alt="Blog">
+                                </a>
+                            </div>
+                            <div class="bottom">
+                                <ul>
+                                    <li>
+                                        <i class="icofont-calendar"></i>
+                                        <span>21 Jan, 2024</span>
+                                    </li>
+                                    <li>
+                                        <i class="icofont-user-alt-3"></i>
+                                        <span>By:</span>
+                                        <a href="#">Admin</a>
+                                    </li>
+                                </ul>
+                                <h3>
+                                    <a href="blog-details.html">Donate for nutration less poor people</a>
+                                </h3>
+                                <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Amet cupiditate sit ducimus dolor laudantium distinction</p>
+                                <a class="blog-btn" href="blog-details.html">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="blog-item">
+                            <div class="top">
+                                <a href="blog-details.html">
+                                    <img src="assets/img/blog/blog2.jpg" alt="Blog">
+                                </a>
+                            </div>
+                            <div class="bottom">
+                                <ul>
+                                    <li>
+                                        <i class="icofont-calendar"></i>
+                                        <span>22 Jan, 2024</span>
+                                    </li>
+                                    <li>
+                                        <i class="icofont-user-alt-3"></i>
+                                        <span>By:</span>
+                                        <a href="#">Admin</a>
+                                    </li>
+                                </ul>
+                                <h3>
+                                    <a href="blog-details.html">Charity meetup in Berline next year</a>
+                                </h3>
+                                <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Amet cupiditate sit ducimus dolor laudantium distinction</p>
+                                <a class="blog-btn" href="blog-details.html">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="blog-item">
+                            <div class="top">
+                                <a href="blog-details.html">
+                                    <img src="assets/img/blog/blog3.jpg" alt="Blog">
+                                </a>
+                            </div>
+                            <div class="bottom">
+                                <ul>
+                                    <li>
+                                        <i class="icofont-calendar"></i>
+                                        <span>23 Jan, 2024</span>
+                                    </li>
+                                    <li>
+                                        <i class="icofont-user-alt-3"></i>
+                                        <span>By:</span>
+                                        <a href="#">Admin</a>
+                                    </li>
+                                </ul>
+                                <h3>
+                                    <a href="blog-details.html">Donate for the poor people to help them</a>
+                                </h3>
+                                <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Amet cupiditate sit ducimus dolor laudantium distinction</p>
+                                <a class="blog-btn" href="blog-details.html">Read More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+>>>>>>> 6ff63bdabcb66e48e31154a65002232bf281b3f1
         <!--=== End Blog ===-->
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
