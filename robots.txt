@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /client/index.php
+Allow: /client/donation-details.php
+Allow: /client/blog-details.php
+Allow: /client/donors.php
+Allow: /client/about.php
+Allow: /client/contact.php
+Allow: /client/assets/
+
+Disallow: /admin/
+Disallow: /client/login.php
+Disallow: /client/register.php
+Disallow: /client/forgot-password.php
+Disallow: /client/reset-password.php
+Disallow: /client/verify-email.php
+Disallow: /client/verify-phone.php
+Disallow: /client/profile.php
+Disallow: /client/edit-profile.php
+Disallow: /client/certificate.php
+Disallow: /client/process_donation.php
+Disallow: /client/logout.php
+
+Sitemap: https://hazinafunding.com/client/sitemap.php

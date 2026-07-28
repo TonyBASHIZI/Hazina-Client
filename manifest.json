@@ -1,0 +1,27 @@
+{
+  "name": "Hazina Funding",
+  "short_name": "Hazina",
+  "description": "Plateforme de collecte de dons pour des causes locales en RD Congo.",
+  "start_url": "/client/index.php",
+  "scope": "/client/",
+  "display": "standalone",
+  "background_color": "#0B0F2A",
+  "theme_color": "#0B0F2A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "id": "/client/index.php",
+      "src": "assets/img/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    
+    {
+      "src": "assets/img/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
