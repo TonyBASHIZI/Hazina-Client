@@ -229,19 +229,19 @@ require_once __DIR__ . '/includes/header.php';
 
             <div class="mb-3">
                 <label class="form-label">Compétences</label>
-                <div id="editor-competences" style="background:#fff; min-height:100px;"><?= $data['competences'] ?></div>
+                <div id="editor-competences" style="background:#fff; min-height:100px;"><?= sanitizeRichText($data['competences']) ?></div>
                 <input type="hidden" name="competences" id="input-competences">
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Expérience (bénévolat, professionnelle...)</label>
-                <div id="editor-experience" style="background:#fff; min-height:100px;"><?= $data['experience'] ?></div>
+                <div id="editor-experience" style="background:#fff; min-height:100px;"><?= sanitizeRichText($data['experience']) ?></div>
                 <input type="hidden" name="experience" id="input-experience">
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Pourquoi veux-tu devenir bénévole chez nous ? *</label>
-                <div id="editor-motivation" style="background:#fff; min-height:130px;"><?= $data['motivation'] ?></div>
+                <div id="editor-motivation" style="background:#fff; min-height:130px;"><?= sanitizeRichText($data['motivation']) ?></div>
                 <input type="hidden" name="motivation" id="input-motivation">
                 <small class="text-danger" id="motivationError" style="display:none;">Ce champ est obligatoire.</small>
             </div>

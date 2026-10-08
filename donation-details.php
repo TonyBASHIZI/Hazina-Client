@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/includes/functions.php';
 $pdo = getPDO();
 
@@ -137,11 +138,65 @@ require_once __DIR__ . '/includes/header.php';
                             <div class="alert alert-danger"><?= e($flashError) ?></div>
                         <?php endif; ?>
 
-                        <?php if (!empty($_GET['thanks'])): ?>
-                            <div class="alert alert-success">
-                                Merci pour ton don ! Il est enregistré et sera confirmé sous peu par notre équipe.
-                            </div>
-                        <?php endif; ?>
+                        <?php if (!empty($_GET['ussd_push'])):
+                                $attemptId = (int)($_SESSION['ussd_attempt_id'] ?? 0);
+                                $attemptQuery = $pdo->prepare('SELECT id FROM ussd_payment_attempts WHERE id = :id AND user_id = :uid AND project_id = :pid');
+                                $attemptQuery->execute(['id' => $attemptId, 'uid' => $client['id'], 'pid' => $id]);
+                                $ussdAttemptId = (int)$attemptQuery->fetchColumn();
+                            ?>
+                                <div class="alert alert-warning" id="ussdPendingAlert">
+                                    <i class="icofont-mobile"></i> <span id="ussdPendingMessage"><?= e($_SESSION['ussd_push_message'] ?? 'Transaction envoyée. Valide le push message sur ton téléphone pour finaliser ton don.') ?></span>
+                                    <div class="mt-2"><span class="spinner-border spinner-border-sm"></span> Vérification automatique en cours...</div>
+                                </div>
+                                <div class="alert alert-success" id="ussdSuccessAlert" style="display:none;">
+                                    <i class="icofont-check-circled"></i> Paiement confirmé ! Merci pour ton don 🎉
+                                </div>
+                                <div class="alert alert-danger" id="ussdFailedAlert" style="display:none;">
+                                    Le paiement n'a pas abouti. Tu peux réessayer.
+                                </div>
+                                <?php unset($_SESSION['ussd_push_message']); ?>
+
+                                <script>
+                                (function() {
+                                    const attemptId = <?= (int)$ussdAttemptId ?>;
+                                    if (!attemptId) return;
+
+                                    let attempts = 0;
+                                    const maxAttempts = 20; // ~2 minutes à 6s d'intervalle
+
+                                    const interval = setInterval(() => {
+                                        attempts++;
+                                        fetch('includes/ussd-check-status.php?attempt_id=' + attemptId)
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                if (data.status === 'completed') {
+                                                    clearInterval(interval);
+                                                    document.getElementById('ussdPendingAlert').style.display = 'none';
+                                                    document.getElementById('ussdSuccessAlert').style.display = 'block';
+                                                    setTimeout(() => {
+                                                        const url = new URL(location.href);
+                                                        url.searchParams.delete('ussd_push');
+                                                        history.replaceState({}, '', url);
+                                                        location.reload();
+                                                    }, 2000);
+                                                } else if (data.status === 'awaiting_callback') {
+                                                    document.getElementById('ussdPendingMessage').textContent = 'Paiement confirmé par FlexPay. En attente de la confirmation finale pour enregistrer le don...';
+                                                } else if (data.status === 'cancelled' || data.status === 'refunded') {
+                                                    clearInterval(interval);
+                                                    document.getElementById('ussdPendingAlert').style.display = 'none';
+                                                    document.getElementById('ussdFailedAlert').style.display = 'block';
+                                                    if (data.status === 'refunded') {
+                                                        document.getElementById('ussdFailedAlert').textContent = 'Le paiement a été remboursé.';
+                                                    }
+                                                } else if (attempts >= maxAttempts) {
+                                                    clearInterval(interval);
+                                                }
+                                            })
+                                            .catch(() => {});
+                                    }, 6000);
+                                })();
+                                </script>
+                            <?php endif; ?>
 
                         <?php if ($project_details['status'] === 'completed'): ?>
                             <div class="alert alert-success">
@@ -173,20 +228,41 @@ require_once __DIR__ . '/includes/header.php';
 
                             <!-- Méthode de paiement -->
                             <div class="form-radio-area">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="payment_group" id="payMobile" value="mobile" checked onchange="togglePaymentUI()">
+                                <div class="form-check form-check-inline" style="display:none;">
+                                    <input class="form-check-input" type="radio" name="payment_group" id="payMobile" value="mobile" onchange="togglePaymentUI(this.value)">
                                     <label class="form-check-label" for="payMobile">Mobile Money</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="payment_group" id="payUssd" value="ussd" checked onchange="togglePaymentUI(this.value)">
+                                        <label class="form-check-label" for="payUssd">Paiement USSD (push)</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="payment_group" id="payVisa" value="visa" onchange="togglePaymentUI(this.value)">
+                                        <label class="form-check-label" for="payVisa">Carte Visa</label>
+                                    </div>
                                 </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="payment_group" id="payVisa" value="visa" onchange="togglePaymentUI()">
-                                    <label class="form-check-label" for="payVisa">Carte Visa</label>
-                                </div>
-                            </div>
 
-                            <input type="hidden" name="payment_method" id="paymentMethodField" value="mpesa">
+                                <div id="ussdInfo" class="mb-3 mt-3">
+                                    <div class="alert alert-info" style="font-size:14px;">
+                                        <i class="icofont-info-circle"></i> Tu recevras une notification sur ton téléphone pour valider le paiement directement par USSD, sans quitter le site.
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-between mb-3 p-3" style="gap:16px; background:#f6f8fb; border-radius:8px;">
+                                        <div>
+                                            <label for="ussdCurrency" class="mb-0"><strong>Devise du paiement</strong></label>
+                                            <small class="text-muted d-block">Choisis la devise de ton don.</small>
+                                        </div>
+                                        <select name="ussd_currency" id="ussdCurrency" class="form-select" style="max-width:145px; flex-shrink:0;">
+                                            <option value="USD" selected>USD ($)</option>
+                                            <option value="CDF">CDF (FC)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            <input type="hidden" name="payment_method" id="paymentMethodField" value="ussd">
+                            <input type="hidden" name="ussd_operator" id="ussdOperatorField" value="mpesa">
 
                             <div id="mobileOperators" class="mb-3 mt-3">
-                                <label class="d-block mb-2"><strong>Choisis ton opérateur</strong></label>
+                                <label class="d-block mb-2"><strong>Choisis ton réseau</strong></label>
                                 <div style="display:flex; flex-wrap:wrap; gap:10px;">
                                     <div class="operator-box" data-value="mpesa" onclick="selectOperator('mpesa', this)"
                                          style="cursor:pointer; border:2px solid #ff6015; border-radius:8px; padding:10px 16px; min-width:110px; text-align:center;">
@@ -204,6 +280,7 @@ require_once __DIR__ . '/includes/header.php';
                                         <small>Orange</small>
                                     </div>
                                 </div>
+                                <small class="text-muted d-block mt-2">Choisis le réseau associé au numéro de paiement.</small>
                             </div>
 
                             <div id="visaCardFields" class="mb-3 mt-3" style="display:none;">
@@ -226,10 +303,10 @@ require_once __DIR__ . '/includes/header.php';
                             </div>
 
                             <div class="mb-3 mt-3">
-                                <label class="d-block mb-2"><strong>Choisis un montant ($)</strong></label>
+                                <label class="d-block mb-2"><strong id="amountLabel">Choisis un montant ($)</strong></label>
                                 <div id="amountButtons" style="display:flex; flex-wrap:wrap; gap:8px;">
                                     <?php foreach ([10, 20, 30, 50, 100] as $amt): ?>
-                                        <button type="button" class="amount-btn" data-amount="<?= $amt ?>"
+                                        <button type="button" class="amount-btn" data-usd="<?= $amt ?>" data-amount="<?= $amt ?>"
                                             style="padding:10px 18px; border:2px solid #ff6015; background:#fff; color:#ff6015; border-radius:6px; font-weight:600; cursor:pointer;">
                                             <?= $amt ?>$
                                         </button>
@@ -309,92 +386,235 @@ require_once __DIR__ . '/includes/header.php';
                             </div>
                         </div>
 
-                        <script>
-                        function selectOperator(value, el) {
-                            document.getElementById('paymentMethodField').value = value;
-                            document.querySelectorAll('#mobileOperators .operator-box').forEach(b => b.style.borderColor = '#e5e7eb');
-                            el.style.borderColor = '#ff6015';
-                        }
+                        <div class="modal fade" id="ussdProcessingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content text-center" style="border-radius:12px;">
+                                    <div class="modal-body p-4">
+                                        <div id="ussdProcessingSpinner" class="spinner-border text-warning mb-3" role="status">
+                                            <span class="visually-hidden">Traitement...</span>
+                                        </div>
+                                        <h5 id="ussdProcessingTitle">Traitement du paiement</h5>
+                                        <p id="ussdProcessingMessage" class="mb-3">Veuillez confirmer la demande sur votre téléphone. Gardez cette page ouverte.</p>
+                                        <div class="d-flex justify-content-center" style="gap:10px;">
+                                            <button type="button" id="ussdProcessingRetry" class="btn common-btn" style="display:none;">Réessayer</button>
+                                            <button type="button" id="ussdProcessingClose" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="display:none;">Fermer</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                        function togglePaymentUI() {
-                            const isMobile = document.getElementById('payMobile').checked;
-                            document.getElementById('mobileOperators').style.display = isMobile ? 'block' : 'none';
-                            document.getElementById('visaCardFields').style.display = isMobile ? 'none' : 'block';
-                            if (!isMobile) {
-                                document.getElementById('paymentMethodField').value = 'visa';
-                            } else {
-                                const current = document.getElementById('paymentMethodField').value;
-                                document.getElementById('paymentMethodField').value = (current === 'visa' ? 'mpesa' : current);
+                       <script>
+                            function selectOperator(value, el) {
+                                document.getElementById('ussdOperatorField').value = value;
+                                document.querySelectorAll('#mobileOperators .operator-box').forEach(b => b.style.borderColor = '#e5e7eb');
+                                el.style.borderColor = '#ff6015';
                             }
-                        }
 
-                        document.getElementById('cardNumber')?.addEventListener('input', function () {
-                            this.value = this.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
-                        });
-                        document.getElementById('cardExpiry')?.addEventListener('input', function () {
-                            this.value = this.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2').slice(0, 5);
-                        });
+                            function togglePaymentUI(selectedMethod) {
+                                // Use the changed radio's value directly so the payment method
+                                // does not depend on a stale hidden field or a stale checked read.
+                                if (selectedMethod) {
+                                    const selectedRadio = document.querySelector('input[name="payment_group"][value="' + selectedMethod + '"]');
+                                    if (selectedRadio) selectedRadio.checked = true;
+                                }
+                                const isMobile = document.getElementById('payMobile').checked;
+                                const isUssd = document.getElementById('payUssd').checked;
+                                const isVisa = document.getElementById('payVisa').checked;
 
-                        document.querySelectorAll('.amount-btn').forEach(btn => {
-                            btn.addEventListener('click', () => {
-                                document.querySelectorAll('.amount-btn').forEach(b => {
-                                    b.style.background = '#fff';
-                                    b.style.color = '#ff6015';
+                                document.getElementById('mobileOperators').style.display = isUssd ? 'block' : 'none';
+                                document.getElementById('visaCardFields').style.display = isVisa ? 'block' : 'none';
+                                document.getElementById('ussdInfo').style.display = isUssd ? 'block' : 'none';
+                                updateDonationCurrencyUI();
+
+                                if (isVisa) {
+                                    document.getElementById('paymentMethodField').value = 'visa';
+                                } else if (isUssd) {
+                                    document.getElementById('paymentMethodField').value = 'ussd';
+                                } else {
+                                    const current = document.getElementById('paymentMethodField').value;
+                                    document.getElementById('paymentMethodField').value = (['visa','ussd'].includes(current) ? 'mpesa' : current);
+                                }
+                            }
+
+                            function updateDonationCurrencyUI() {
+                                const isCdf = document.getElementById('payUssd').checked &&
+                                    document.getElementById('ussdCurrency').value === 'CDF';
+                                const rate = <?= (int)USD_TO_CDF_RATE ?>;
+                                const amountInput = document.getElementById('amountInput');
+                                document.getElementById('amountLabel').textContent = isCdf
+                                    ? 'Choisis un montant (FC)' : 'Choisis un montant ($)';
+                                amountInput.step = isCdf ? '1' : '0.01';
+                                amountInput.placeholder = isCdf
+                                    ? 'Ou saisis un montant en CDF'
+                                    : 'Ou saisis un montant en USD';
+                                document.querySelectorAll('.amount-btn').forEach(btn => {
+                                    const usd = Number(btn.dataset.usd);
+                                    const shown = isCdf ? Math.round(usd * rate) : usd;
+                                    btn.dataset.amount = shown;
+                                    btn.textContent = isCdf
+                                        ? shown.toLocaleString('fr-FR') + ' FC'
+                                        : usd + '$';
                                 });
-                                btn.style.background = '#ff6015';
-                                btn.style.color = '#fff';
-                                document.getElementById('amountInput').value = btn.dataset.amount;
+                                amountInput.value = '';
+                            }
+
+                            document.getElementById('ussdCurrency').addEventListener('change', updateDonationCurrencyUI);
+
+                            document.getElementById('cardNumber')?.addEventListener('input', function () {
+                                this.value = this.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
                             });
-                        });
+                            document.getElementById('cardExpiry')?.addEventListener('input', function () {
+                                this.value = this.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '$1/$2').slice(0, 5);
+                            });
 
-                        togglePaymentUI();
+                            document.querySelectorAll('.amount-btn').forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    document.querySelectorAll('.amount-btn').forEach(b => {
+                                        b.style.background = '#fff';
+                                        b.style.color = '#ff6015';
+                                    });
+                                    btn.style.background = '#ff6015';
+                                    btn.style.color = '#fff';
+                                    const isCdf = document.getElementById('payUssd').checked &&
+                                        document.getElementById('ussdCurrency').value === 'CDF';
+                                    const usdPreset = Number(btn.dataset.usd);
+                                    const selectedAmount = isCdf
+                                        ? Math.round(usdPreset * <?= (int)USD_TO_CDF_RATE ?>)
+                                        : usdPreset;
+                                    document.getElementById('amountInput').value = selectedAmount;
+                                });
+                            });
 
-                        const openBtn = document.getElementById('openPaymentConfirm');
-                        const modalEl = document.getElementById('paymentPhoneModal');
-                        const donationForm = document.getElementById('donationForm');
-                        let bsModal;
+                            togglePaymentUI(document.querySelector('input[name="payment_group"]:checked')?.value || 'mobile');
 
-                        openBtn.addEventListener('click', () => {
-                            if (!bsModal) {
-                                bsModal = new bootstrap.Modal(modalEl);
+                            const openBtn = document.getElementById('openPaymentConfirm');
+                            const modalEl = document.getElementById('paymentPhoneModal');
+                            const donationForm = document.getElementById('donationForm');
+                            const processingModalEl = document.getElementById('ussdProcessingModal');
+                            let processingModal;
+                            const processingTitle = document.getElementById('ussdProcessingTitle');
+                            const processingMessage = document.getElementById('ussdProcessingMessage');
+                            const processingSpinner = document.getElementById('ussdProcessingSpinner');
+                            const processingClose = document.getElementById('ussdProcessingClose');
+                            const processingRetry = document.getElementById('ussdProcessingRetry');
+                            let bsModal;
+
+                            function finishUssdProcessing(title, message, canRetry = false) {
+                                processingTitle.textContent = title;
+                                processingMessage.textContent = message;
+                                processingSpinner.style.display = 'none';
+                                processingClose.style.display = 'inline-block';
+                                processingRetry.style.display = canRetry ? 'inline-block' : 'none';
+                                openBtn.disabled = false;
                             }
-                            document.getElementById('modalPhoneDisplay').textContent = document.getElementById('paymentPhoneField').value;
-                            document.getElementById('phoneChangeArea').style.display = 'none';
-                            document.getElementById('phoneYesBtn').style.display = 'inline-block';
-                            document.getElementById('phoneNoBtn').style.display = 'inline-block';
-                            document.getElementById('phoneConfirmChangeBtn').style.display = 'none';
-                            bsModal.show();
-                        });
 
-                        document.getElementById('phoneYesBtn').addEventListener('click', () => {
-                            bsModal.hide();
-                            donationForm.submit();
-                        });
-
-                        document.getElementById('phoneNoBtn').addEventListener('click', () => {
-                            document.getElementById('phoneChangeArea').style.display = 'block';
-                            document.getElementById('phoneYesBtn').style.display = 'none';
-                            document.getElementById('phoneNoBtn').style.display = 'none';
-                            document.getElementById('phoneConfirmChangeBtn').style.display = 'block';
-                        });
-
-                        document.getElementById('phoneConfirmChangeBtn').addEventListener('click', () => {
-                            const country = document.getElementById('newPhoneCountry').value;
-                            const number = document.getElementById('newPhoneNumber').value.trim();
-
-                            if (!number) {
-                                alert('Merci de saisir un numéro.');
-                                return;
+                            async function checkUssdAttempt(attemptId) {
+                                try {
+                                    const response = await fetch('includes/ussd-check-status.php?attempt_id=' + encodeURIComponent(attemptId), {
+                                        headers: {'Accept': 'application/json'}
+                                    });
+                                    const data = await response.json();
+                                    if (data.status === 'completed') {
+                                        finishUssdProcessing('Paiement confirmé', 'Merci ! Ton don a été enregistré avec succès.');
+                                        return;
+                                    }
+                                    if (data.status === 'cancelled' || data.status === 'refunded') {
+                                        finishUssdProcessing('Paiement non abouti', 'Le paiement n’a pas été confirmé. Tu peux réessayer ou fermer cette fenêtre.', true);
+                                        return;
+                                    }
+                                    if (data.status === 'awaiting_callback') {
+                                        processingMessage.textContent = 'Paiement confirmé par FlexPay. En attente de la confirmation finale…';
+                                    }
+                                } catch (error) {
+                                    // Keep checking while the donor remains on the page.
+                                }
+                                window.setTimeout(() => checkUssdAttempt(attemptId), 6000);
                             }
 
-                            const fullNumber = country + number.replace(/^0+/, '');
-                            document.getElementById('paymentPhoneField').value = fullNumber;
-                            document.getElementById('paymentPhoneDisplay').value = fullNumber;
+                            function submitConfirmedDonation() {
+                                if (!donationForm.reportValidity()) return;
+                                if (!document.getElementById('payUssd').checked) {
+                                    donationForm.submit();
+                                    return;
+                                }
 
-                            bsModal.hide();
-                            donationForm.submit();
-                        });
-                        </script>
+                                openBtn.disabled = true;
+                                processingTitle.textContent = 'Traitement du paiement';
+                                processingMessage.textContent = 'Veuillez confirmer la demande sur votre téléphone. Gardez cette page ouverte.';
+                                processingSpinner.style.display = 'inline-block';
+                                processingClose.style.display = 'none';
+                                processingRetry.style.display = 'none';
+                                if (!processingModal) {
+                                    processingModal = new bootstrap.Modal(processingModalEl);
+                                }
+                                processingModal.show();
+
+                                fetch(donationForm.action, {
+                                    method: 'POST',
+                                    body: new FormData(donationForm),
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json'
+                                    }
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (!data.success) {
+                                            finishUssdProcessing('Paiement non lancé', data.message || 'Impossible de démarrer le paiement.', true);
+                                            return;
+                                        }
+                                        processingMessage.textContent = data.message || 'Demande envoyée. Confirme le paiement sur ton téléphone.';
+                                        checkUssdAttempt(data.attempt_id);
+                                    })
+                                    .catch(() => {
+                                        finishUssdProcessing('Erreur de connexion', 'La réponse du paiement n’a pas pu être vérifiée. Ferme cette fenêtre et vérifie son statut avant de réessayer.');
+                                    });
+                            }
+
+                            processingRetry.addEventListener('click', submitConfirmedDonation);
+
+                            openBtn.addEventListener('click', () => {
+                                if (!bsModal) {
+                                    bsModal = new bootstrap.Modal(modalEl);
+                                }
+                                document.getElementById('modalPhoneDisplay').textContent = document.getElementById('paymentPhoneField').value;
+                                document.getElementById('phoneChangeArea').style.display = 'none';
+                                document.getElementById('phoneYesBtn').style.display = 'inline-block';
+                                document.getElementById('phoneNoBtn').style.display = 'inline-block';
+                                document.getElementById('phoneConfirmChangeBtn').style.display = 'none';
+                                bsModal.show();
+                            });
+
+                            document.getElementById('phoneYesBtn').addEventListener('click', () => {
+                                bsModal.hide();
+                                window.setTimeout(submitConfirmedDonation, 250);
+                            });
+
+                            document.getElementById('phoneNoBtn').addEventListener('click', () => {
+                                document.getElementById('phoneChangeArea').style.display = 'block';
+                                document.getElementById('phoneYesBtn').style.display = 'none';
+                                document.getElementById('phoneNoBtn').style.display = 'none';
+                                document.getElementById('phoneConfirmChangeBtn').style.display = 'block';
+                            });
+
+                            document.getElementById('phoneConfirmChangeBtn').addEventListener('click', () => {
+                                const country = document.getElementById('newPhoneCountry').value;
+                                const number = document.getElementById('newPhoneNumber').value.trim();
+
+                                if (!number) {
+                                    alert('Merci de saisir un numéro.');
+                                    return;
+                                }
+
+                                const fullNumber = country + number.replace(/^0+/, '');
+                                document.getElementById('paymentPhoneField').value = fullNumber;
+                                document.getElementById('paymentPhoneDisplay').value = fullNumber;
+
+                                bsModal.hide();
+                                window.setTimeout(submitConfirmedDonation, 250);
+                            });
+                            </script>
                         <?php endif; ?>
                     </div>
 

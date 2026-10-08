@@ -280,3 +280,10 @@ a:hover {
 #activityContent {
   background: #fff !important;
 }
+#iosInstallBanner {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+}
+#iosInstallBanner * {
+  pointer-events: auto !important;
+}

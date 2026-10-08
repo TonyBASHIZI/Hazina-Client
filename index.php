@@ -491,8 +491,9 @@ $donors = $pdo->query(
 ?>
 
 <!--=== Team / Donateurs ===-->
-<section class="team-area pt-100 pb-70">
-    <div class="container">
+<!--=== Team / Donateurs ===-->
+<section class="team-area" style="min-height:450px;">
+    <div class="container ptb-100">
         <div class="section-title">
             <span class="sub-title">Nos donateurs</span>
             <h2>Merci à ceux qui rendent tout ça possible</h2>
